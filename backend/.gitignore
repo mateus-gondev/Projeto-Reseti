@@ -1,0 +1,26 @@
+# Ambiente Virtual
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Variáveis de Ambiente e Segredos
+.env
+env
+.ENV
+ENV
+instance/
+.pytest_cache/
+
+#Migrações
+migrations
+.migrations
+
+# IDEs
+.vscode/
+.idea/
