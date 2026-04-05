@@ -81,3 +81,33 @@ def ver_todas_os():
         })
     
     return jsonify(output), 200
+
+# EDITAR ORDEM DE SERVIÇO
+@os_bp.route('/<int:id>', methods=['PUT'])
+def editar_os(id):
+    data = request.get_json()
+    ordem = CriarOS.query.get_or_404(id)
+
+    ordem.tipo_suporte = data.get('tipo_suporte', ordem.tipo_suporte)
+    ordem.assunto = data.get('assunto', ordem.assunto)
+    ordem.descricao = data.get('descricao', ordem.descricao)
+    ordem.prioridade = data.get('prioridade', ordem.prioridade)
+    
+    novo_status = data.get('status', ordem.status)
+    if novo_status == 'Finalizado' and ordem.status != 'Finalizado':
+        ordem.data_fim = datetime.utcnow()
+    
+    ordem.status = novo_status
+
+    db.session.commit()
+    return jsonify({"message": f"Ordem {ordem.numero_os} atualizada com sucesso!"}), 200
+
+# REMOVER ORDEM DE SERVIÇO
+@os_bp.route('/<int:id>', methods=['DELETE'])
+def deletar_os(id):
+    ordem = CriarOS.query.get_or_404(id)
+    
+    db.session.delete(ordem)
+    db.session.commit()
+    
+    return jsonify({"message": f"Ordem {ordem.numero_os} removida do sistema!"}), 200
