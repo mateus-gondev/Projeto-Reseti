@@ -22,8 +22,8 @@ O sistema esta sendo construído pensando em escalabilidade e segurança, utiliz
 
 Para facilitar a colaboração, dividimos a documentação técnica em dois guias específicos:
 
-* **[⚙️ Guia de Configuração e Ambiente](https://github.com/mateus-gondev/Projeto-Reseti/blob/main/backend/Configuracao_Ambiente.md):** Aprenda a configurar o `.venv`, instalar dependências, configurar o banco de dados PostgreSQL e as variáveis do `.env`.
-* **[🔌 Guia de Rotas e Testes (API)](https://github.com/mateus-gondev/Projeto-Reseti/blob/main/backend/Guia_de_Teste.md):** Detalhamento de todos os endpoints disponíveis, tipos de requisição (JSON) e como realizar os testes utilizando o **Postman**.
+* **[⚙️ Guia de Configuração e Ambiente](https://github.com/mateus-gondev/Projeto-Reseti/blob/main/backend/docs/Configuracao_Ambiente.md):** Aprenda a configurar o `.venv`, instalar dependências, configurar o banco de dados PostgreSQL e as variáveis do `.env`.
+* **[🔌 Guia de Rotas e Testes (API)](https://github.com/mateus-gondev/Projeto-Reseti/blob/main/backend/docs/Guia_de_Teste.md):** Detalhamento de todos os endpoints disponíveis, tipos de requisição (JSON) e como realizar os testes utilizando o **Postman**.
 
 ---
 
