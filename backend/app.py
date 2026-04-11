@@ -12,8 +12,8 @@ def create_app():
     db.init_app(app)
     Migrate(app, db)
     mail.init_app(app)
-    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
-
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:5174", "http://localhost:5173"]}})
+    
     # Registro de Blueprints 
     from routes.auth_routes import auth_bp
     from routes.user_routes import user_bp

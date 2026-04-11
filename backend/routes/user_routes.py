@@ -1,8 +1,7 @@
 
 # AQUI NÓS ADMINISTRADORES REALIZAREMOS O CRUD DOS USUÁRIOS NO SISTEMA.
-
-from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash
+from flask import Blueprint, request, jsonify # type: ignore
+from werkzeug.security import generate_password_hash # type: ignore
 from extensions import db
 from models import Usuario
 
