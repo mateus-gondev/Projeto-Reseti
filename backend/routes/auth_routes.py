@@ -1,11 +1,13 @@
 
 # Rotas para o Usuário Logar
-from flask_mail import Message
-from flask import Blueprint, request, jsonify, url_for, current_app 
-from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import URLSafeTimedSerializer as Serializer
+from flask_mail import Message # type: ignore
+from flask import Blueprint, request, jsonify, url_for, current_app # type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash # type: ignore
+from itsdangerous import URLSafeTimedSerializer as Serializer # type: ignore
 from extensions import db, mail 
 from models import Usuario
+import jwt 
+import datetime
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -43,9 +45,18 @@ def login():
     if not usuario or not check_password_hash(usuario.senha, data.get('senha')):
         return jsonify({"error": "Credenciais inválidas"}), 401
 
+    token = jwt.encode({
+        'public_id': usuario.id_user, 
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    }, current_app.config['SECRET_KEY'], algorithm="HS256")
+
     return jsonify({
         "message": "Login realizado!",
-        "user": {"nome": usuario.nome, "permissao": usuario.permissao}
+        "token": token, 
+        "user": {
+            "nome": usuario.nome, 
+            "permissao": usuario.permissao
+        }
     }), 200
 
 

@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask # type: ignore
 from config import Config
-from flask_migrate import Migrate
+from flask_migrate import Migrate # type: ignore
 from extensions import db, mail
+from flask_cors import CORS  # type: ignore
 
 def create_app():
     app = Flask(__name__)
@@ -11,6 +12,7 @@ def create_app():
     db.init_app(app)
     Migrate(app, db)
     mail.init_app(app)
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
     # Registro de Blueprints 
     from routes.auth_routes import auth_bp
