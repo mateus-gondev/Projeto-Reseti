@@ -22,12 +22,14 @@ def create_app():
     from routes.os_routes import os_bp
     from routes.equipamento_routes import equip_bp
     from routes.reserva_routes import reserva_bp
+    from routes.dashboard import dash_bp
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(user_bp, url_prefix='/usuarios')
     app.register_blueprint(os_bp, url_prefix='/os')
     app.register_blueprint(equip_bp, url_prefix='/equipamentos')
     app.register_blueprint(reserva_bp, url_prefix='/reservas')
+    app.register_blueprint(dash_bp, url_prefix='/dashboard')
 
     return app
 
