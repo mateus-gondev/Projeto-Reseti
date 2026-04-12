@@ -1,8 +1,9 @@
 from flask import Flask # type: ignore
 from config import Config
 from flask_migrate import Migrate # type: ignore
-from extensions import db, mail
+from extensions import db, mail, socketio
 from flask_cors import CORS  # type: ignore
+
 
 def create_app():
     app = Flask(__name__)
@@ -13,6 +14,7 @@ def create_app():
     Migrate(app, db)
     mail.init_app(app)
     CORS(app, resources={r"/*": {"origins": ["http://localhost:5174", "http://localhost:5173"]}})
+    socketio.init_app(app)
     
     # Registro de Blueprints 
     from routes.auth_routes import auth_bp
@@ -31,4 +33,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

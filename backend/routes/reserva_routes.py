@@ -1,8 +1,8 @@
 
 # Rotas para trabalhar as Reservas do Usuário
 
-from flask import Blueprint, request, jsonify
-from extensions import db
+from flask import Blueprint, request, jsonify # type: ignore
+from extensions import db, socketio
 from models import Reserva, Equipamento, Usuario
 from datetime import datetime
 
@@ -21,7 +21,6 @@ def criar_reserva():
     if equipamento.status != 'Disponível':
         return jsonify({"error": "Este equipamento não está disponível para reserva"}), 400
 
-    # Converte as strings de data para objetos datetime do Python
     try:
         inicio = datetime.fromisoformat(data.get('data_inicio'))
         fim = datetime.fromisoformat(data.get('data_fim'))
@@ -41,6 +40,8 @@ def criar_reserva():
 
     db.session.add(nova_reserva)
     db.session.commit()
+    
+    socketio.emit('atualizar_lista', {'tipo': 'reserva_criada'}, namespace='/')
 
     return jsonify({"message": "Reserva realizada com sucesso e equipamento bloqueado!"}), 201
 
@@ -117,6 +118,9 @@ def atualizar_reserva(id):
     reserva.status = data.get('status', reserva.status)
 
     db.session.commit()
+    
+    socketio.emit('atualizar_lista', {'tipo': 'reserva_editada'}, namespace='/')
+    
     return jsonify({"message": "Reserva atualizada com sucesso!"}), 200
 
 # FINALIZAR OU CANCELAR RESERVA 
@@ -130,5 +134,7 @@ def cancelar_reserva(id):
 
     db.session.delete(reserva)
     db.session.commit()
+    
+    socketio.emit('atualizar_lista', {'tipo': 'reserva_cancelada'}, namespace='/')
     
     return jsonify({"message": "Reserva cancelada e equipamento liberado!"}), 200

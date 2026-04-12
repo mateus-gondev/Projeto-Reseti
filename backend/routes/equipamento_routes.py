@@ -1,7 +1,7 @@
 
 # Rotas para cadastrar os Equipamentos
-
-from flask import Blueprint, request, jsonify
+import os
+from flask import Blueprint, request, jsonify # type: ignore
 from extensions import db
 from models import Equipamento
 
@@ -68,3 +68,16 @@ def deletar_equipamento(id):
     db.session.commit()
     
     return jsonify({"message": f"Equipamento '{equip.nome}' removido com sucesso!"}), 200
+
+
+@equip_bp.route('/dashboard/stats', methods=['GET'])
+def get_stats():
+    os_pendentes = os.query.filter_by(status='Pendente').count()
+    equip_uso = Equipamento.query.filter_by(status='Reservado').count()
+    
+    return jsonify({
+        "os_pendentes": os_pendentes,
+        "equipamentos_uso": equip_uso,
+        "reservas_hoje": 5, 
+        "atividade": 92
+    })
