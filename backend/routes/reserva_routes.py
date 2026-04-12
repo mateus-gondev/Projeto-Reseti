@@ -1,16 +1,16 @@
-
 # Rotas para trabalhar as Reservas do Usuário
-
 from flask import Blueprint, request, jsonify # type: ignore
 from extensions import db, socketio
 from models import Reserva, Equipamento, Usuario
 from datetime import datetime
+from utils import token_required 
 
 reserva_bp = Blueprint('reservas', __name__)
 
 #  CRIA UMA RESERVA 
 @reserva_bp.route('/', methods=['POST'])
-def criar_reserva():
+@token_required # Aqui informa que precisa do token para execultar a ação
+def criar_reserva(current_user_id):
     data = request.get_json()
     
     # Verifica se o equipamento existe e se está disponível
@@ -28,7 +28,7 @@ def criar_reserva():
         return jsonify({"error": "Formato de data inválido. Use AAAA-MM-DD THH:MM:SS"}), 400
 
     nova_reserva = Reserva(
-        id_user=data.get('id_user'),
+        id_user=current_user_id, 
         id_equip=data.get('id_equip'),
         data_inicio=inicio,
         data_fim=fim,
