@@ -3,7 +3,7 @@
 import os
 from flask import Blueprint, request, jsonify # type: ignore
 from extensions import db
-from models import Equipamento
+from models import Equipamento, Reserva
 
 equip_bp = Blueprint('equipamentos', __name__)
 
@@ -14,12 +14,20 @@ def listar_equipamentos():
     output = []
     
     for equip in equipamentos:
+        id_reserva_ativa = None
+        if equip.status == 'Reservado':
+            # Buscamos a última reserva criada para este equipamento
+            reserva = Reserva.query.filter_by(id_equip=equip.id_equip).order_by(Reserva.id_reserva.desc()).first()
+            if reserva:
+                id_reserva_ativa = reserva.id_reserva
+            
         output.append({
             'id_equip': equip.id_equip,
             'nome': equip.nome,
             'numero_serie': equip.numero_serie,
             'observacao': equip.observacao,
-            'status': equip.status
+            'status': equip.status,
+            'id_reserva_ativa': id_reserva_ativa 
         })
     
     return jsonify(output), 200
