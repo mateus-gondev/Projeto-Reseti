@@ -54,6 +54,7 @@ def login():
         "message": "Login realizado!",
         "token": token, 
         "user": {
+            "id_user": usuario.id_user, 
             "nome": usuario.nome, 
             "permissao": usuario.permissao
         }
