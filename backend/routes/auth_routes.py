@@ -66,7 +66,7 @@ def gerar_token_reset(email):
     s = Serializer(current_app.config['SECRET_KEY'])
     return s.dumps(email, salt='pw-reset-salt')
 
-
+''' Envio Local
 # Funçaõ para enviar mensagem ao Email
 def enviar_email_reset(email_usuario, token):
     link_frontend = f"http://localhost:5173/reset-senha/{token}"
@@ -78,7 +78,20 @@ def enviar_email_reset(email_usuario, token):
         body=f"Para redefinir sua senha no RESETI, clique no link: {link_frontend}"
     )
     mail.send(msg)
-        
+'''  
+# Funçaõ para enviar mensagem ao Email
+def enviar_email_reset(email_usuario, token):
+    # TODO Substitua IP pelo IP da maquina
+    seu_ip_rede = "192.168.0.7" 
+    link_frontend = f"http://{seu_ip_rede}:5173/reset-senha/{token}"
+    
+    msg = Message(
+        subject="Recuperação de Senha - Projeto RESETI",
+        recipients=[email_usuario],
+        sender=current_app.config['MAIL_USERNAME'], 
+        body=f"Para redefinir sua senha no RESETI, clique no link: {link_frontend}"
+    )
+    mail.send(msg)
     
 # RESETE DE SENHA
 @auth_bp.route('/reset-senha', methods=['POST'])

@@ -13,7 +13,8 @@ def create_app():
     db.init_app(app)
     Migrate(app, db)
     mail.init_app(app)
-    CORS(app, resources={r"/*": {"origins": ["http://localhost:5174", "http://localhost:5173"]}})
+    #CORS(app, resources={r"/*": {"origins": ["http://localhost:5174", "http://localhost:5173"]}})
+    CORS(app, resources={r"/*": {"origins": "*"}}) # Liberei para toda Rede
     socketio.init_app(app)
     
     # Registro de Blueprints 
