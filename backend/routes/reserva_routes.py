@@ -125,9 +125,16 @@ def atualizar_reserva(id):
 
 # FINALIZAR OU CANCELAR RESERVA 
 @reserva_bp.route('/<int:id>', methods=['DELETE'])
-def cancelar_reserva(id):
+@token_required
+def cancelar_reserva(current_user_id, id):
     reserva = Reserva.query.get_or_404(id)
     equipamento = Equipamento.query.get(reserva.id_equip)
+    
+    from models import Usuario 
+    user_logado = Usuario.query.get(current_user_id)
+
+    if reserva.id_user != current_user_id and user_logado.permissao != 'Adm':
+        return jsonify({"error": "Acesso negado: você não é o dono desta reserva"}), 403
 
     if equipamento:
         equipamento.status = 'Disponível'

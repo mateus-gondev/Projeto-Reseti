@@ -15,19 +15,21 @@ def listar_equipamentos():
     
     for equip in equipamentos:
         id_reserva_ativa = None
+        id_usuario_reserva = None # 
+        
         if equip.status == 'Reservado':
-            # Buscamos a última reserva criada para este equipamento
+            
             reserva = Reserva.query.filter_by(id_equip=equip.id_equip).order_by(Reserva.id_reserva.desc()).first()
             if reserva:
                 id_reserva_ativa = reserva.id_reserva
+                id_usuario_reserva = reserva.id_user 
             
         output.append({
             'id_equip': equip.id_equip,
             'nome': equip.nome,
-            'numero_serie': equip.numero_serie,
-            'observacao': equip.observacao,
             'status': equip.status,
-            'id_reserva_ativa': id_reserva_ativa 
+            'id_reserva_ativa': id_reserva_ativa,
+            'id_usuario_reserva': id_usuario_reserva 
         })
     
     return jsonify(output), 200
