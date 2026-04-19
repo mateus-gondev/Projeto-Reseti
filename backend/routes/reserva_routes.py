@@ -85,43 +85,46 @@ def listar_todas_reservas():
     
     return jsonify(output), 200
 
-# EDITAR RESERVA 
+# EDITAR RESERVA
 @reserva_bp.route('/<int:id>', methods=['PUT'])
 def atualizar_reserva(id):
     data = request.get_json()
     reserva = Reserva.query.get_or_404(id)
-    
-    # Se o usuário estiver trocando o equipamento na edição
+    equipamento = Equipamento.query.get(reserva.id_equip)
+
     novo_id_equip = data.get('id_equip')
     if novo_id_equip and novo_id_equip != reserva.id_equip:
+        if equipamento:
+            equipamento.status = 'Disponível'
         
-        # Libera o equipamento antigo
-        equip_antigo = Equipamento.query.get(reserva.id_equip)
-        if equip_antigo:
-            equip_antigo.status = 'Disponível'
-        
-        # Verifica e bloqueia o novo equipamento
         novo_equip = Equipamento.query.get(novo_id_equip)
         if not novo_equip or novo_equip.status != 'Disponível':
             return jsonify({"error": "O novo equipamento não está disponível"}), 400
         
         novo_equip.status = 'Reservado'
         reserva.id_equip = novo_id_equip
+        equipamento = novo_equip 
+        
+    novo_status_reserva = data.get('status', reserva.status)
+    
+    if equipamento:
+        if novo_status_reserva in ['Entregue', 'Finalizada', 'Cancelada']:
+            equipamento.status = 'Disponível'
+        elif novo_status_reserva == 'Em Reserva':
+            equipamento.status = 'Reservado'
 
-    # Atualiza os demais campos se eles existirem no JSON
+    reserva.status = novo_status_reserva
+    
     if data.get('data_inicio'):
         reserva.data_inicio = datetime.fromisoformat(data.get('data_inicio'))
     if data.get('data_fim'):
         reserva.data_fim = datetime.fromisoformat(data.get('data_fim'))
-    
     reserva.observacao = data.get('observacao', reserva.observacao)
-    reserva.status = data.get('status', reserva.status)
 
     db.session.commit()
+    socketio.emit('atualizar_lista', {'tipo': 'reserva_atualizada'}, namespace='/')
     
-    socketio.emit('atualizar_lista', {'tipo': 'reserva_editada'}, namespace='/')
-    
-    return jsonify({"message": "Reserva atualizada com sucesso!"}), 200
+    return jsonify({"message": "Reserva e status do equipamento atualizados!"}), 200
 
 # FINALIZAR OU CANCELAR RESERVA 
 @reserva_bp.route('/<int:id>', methods=['DELETE'])
