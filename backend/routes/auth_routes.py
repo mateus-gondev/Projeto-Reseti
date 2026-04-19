@@ -81,8 +81,8 @@ def enviar_email_reset(email_usuario, token):
 '''  
 # Funçaõ para enviar mensagem ao Email
 def enviar_email_reset(email_usuario, token):
-    # TODO Substitua IP pelo IP da maquina
-    seu_ip_rede = "192.168.0.7" 
+    #TODO Substitua IP pelo IP da maquina
+    seu_ip_rede = "192.168.0.8" 
     link_frontend = f"http://{seu_ip_rede}:5173/reset-senha/{token}"
     
     msg = Message(

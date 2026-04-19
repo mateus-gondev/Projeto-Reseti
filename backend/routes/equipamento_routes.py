@@ -15,7 +15,7 @@ def listar_equipamentos():
     
     for equip in equipamentos:
         id_reserva_ativa = None
-        id_usuario_reserva = None # 
+        id_usuario_reserva = None 
         
         if equip.status == 'Reservado':
             
@@ -27,6 +27,8 @@ def listar_equipamentos():
         output.append({
             'id_equip': equip.id_equip,
             'nome': equip.nome,
+            'numero_serie': equip.numero_serie, 
+            'observacao': equip.observacao,
             'status': equip.status,
             'id_reserva_ativa': id_reserva_ativa,
             'id_usuario_reserva': id_usuario_reserva 
