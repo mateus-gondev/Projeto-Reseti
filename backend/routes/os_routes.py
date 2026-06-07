@@ -5,7 +5,7 @@ import random
 import uuid
 from datetime import datetime
 
-from flask import Blueprint, request, jsonify, current_app  # type: ignore
+from flask import Blueprint, request, jsonify, current_app, send_from_directory  # type: ignore
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError  # type: ignore
 from werkzeug.utils import secure_filename  # type: ignore
 
@@ -141,37 +141,55 @@ def ver_minhas_os(id_user):
     ordens = CriarOS.query.filter_by(id_user=id_user).all()
     
     output = []
-    for ordem in ordens: 
+    for ordem in ordens:
+        usuario = Usuario.query.get(ordem.id_user)
+
         output.append({
             "numero_os": ordem.numero_os,
+            "solicitante": usuario.nome if usuario else '',
+            "setor": usuario.setor_curso if usuario else '',
             "assunto": ordem.assunto,
+            "prioridade": ordem.prioridade,
+            "data_inicio": ordem.data_inicio.strftime('%d/%m/%Y %H:%M'),
+            "anexo": ordem.anexo,
             "status": ordem.status,
-            "data_inicio": ordem.data_inicio.strftime('%d/%m/%Y %H:%M')
         })
     
     return jsonify(output), 200
 
-# VER TODAS AS OS (EXCLUSIVO ADM) 
+
+# VISUALIZAR ANEXO DA OS
+@os_bp.route('/anexo/<path:nome_arquivo>', methods=['GET'])
+def visualizar_anexo(nome_arquivo):
+    pasta_upload = os.path.join(current_app.root_path, 'uploads', 'os')
+    return send_from_directory(pasta_upload, nome_arquivo, as_attachment=False)
+
+# VER TODAS AS OS (EXCLUSIVO ADM)
 @os_bp.route('/todas', methods=['GET'])
 def ver_todas_os():
     # TODO Aqui futuramente checaremos quem é ADM
-    todas_os = CriarOS.query.all()
-    
+    todas_os = CriarOS.query.order_by(CriarOS.data_inicio.desc()).all()
+
     output = []
-    for os in todas_os:
-        usuario = Usuario.query.get(os.id_user)
-        
+    for ordem in todas_os:
+        usuario = Usuario.query.get(ordem.id_user)
+
         output.append({
-            "id_os": os.id_os,
-            "numero_os": os.numero_os,
-            "solicitante": usuario.nome,
-            "setor": usuario.setor_curso,
-            "assunto": os.assunto,
-            "status": os.status,
-            "prioridade": os.prioridade
+            "id_os": ordem.id_os,
+            "numero_os": ordem.numero_os,
+            "solicitante": usuario.nome if usuario else '',
+            "setor": usuario.setor_curso if usuario else '',
+            "assunto": ordem.assunto,
+            "prioridade": ordem.prioridade,
+            "data_inicio": ordem.data_inicio.strftime('%d/%m/%Y %H:%M') if ordem.data_inicio else '',
+            "anexo": ordem.anexo,
+            "status": ordem.status,
         })
-    
+
     return jsonify(output), 200
+
+STATUS_VALIDOS_OS = {'Ativo', 'Em andamento', 'Aguardando validação', 'Finalizado'}
+
 
 # EDITAR ORDEM DE SERVIÇO
 @os_bp.route('/<int:id>', methods=['PUT'])
@@ -183,12 +201,16 @@ def editar_os(id):
     ordem.assunto = data.get('assunto', ordem.assunto)
     ordem.descricao = data.get('descricao', ordem.descricao)
     ordem.prioridade = data.get('prioridade', ordem.prioridade)
-    
-    novo_status = data.get('status', ordem.status)
-    if novo_status == 'Finalizado' and ordem.status != 'Finalizado':
-        ordem.data_fim = datetime.utcnow()
-    
-    ordem.status = novo_status
+
+    if 'status' in data:
+        novo_status = data.get('status')
+        if novo_status not in STATUS_VALIDOS_OS:
+            return jsonify({"error": "Status inválido para a Ordem de Serviço"}), 400
+
+        if novo_status == 'Finalizado' and ordem.status != 'Finalizado':
+            ordem.data_fim = datetime.utcnow()
+
+        ordem.status = novo_status
 
     db.session.commit()
     return jsonify({"message": f"Ordem {ordem.numero_os} atualizada com sucesso!"}), 200
