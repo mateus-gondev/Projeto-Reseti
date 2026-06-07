@@ -1,7 +1,7 @@
 
 # Rotas para cadastrar os Equipamentos
-import os
 from flask import Blueprint, request, jsonify # type: ignore
+from sqlalchemy.exc import IntegrityError # type: ignore
 from extensions import db
 from models import Equipamento, Reserva
 
@@ -39,8 +39,13 @@ def listar_equipamentos():
 # CADASTRAR
 @equip_bp.route('/', methods=['POST'])
 def criar_equipamento():
-    data = request.get_json()
-    
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Corpo da requisição inválido ou vazio"}), 400
+
+    if not data.get('nome') or not data.get('numero_serie'):
+        return jsonify({"error": "Os campos 'nome' e 'numero_serie' são obrigatórios"}), 400
+
     # Verifica se o número de série já existe 
     if Equipamento.query.filter_by(numero_serie=data.get('numero_serie')).first():
         return jsonify({"error": "Já existe um equipamento com este número de série"}), 400
@@ -52,8 +57,18 @@ def criar_equipamento():
         status=data.get('status', 'Disponível') 
     )
 
-    db.session.add(novo_equip)
-    db.session.commit()
+    try:
+        db.session.add(novo_equip)
+        db.session.commit()
+    except IntegrityError as e:
+        db.session.rollback()
+        if 'equipamentos_pkey' in str(e.orig):
+            return jsonify({
+                "error": "Erro interno ao gerar ID do equipamento. Execute no PostgreSQL: "
+                         "SELECT setval(pg_get_serial_sequence('equipamentos','id_equip'), "
+                         "(SELECT COALESCE(MAX(id_equip), 1) FROM equipamentos));"
+            }), 500
+        return jsonify({"error": "Não foi possível cadastrar o equipamento. Verifique se o número de série já existe."}), 400
 
     return jsonify({"message": "Equipamento cadastrado com sucesso!", "id_equip": novo_equip.id_equip}), 201
 

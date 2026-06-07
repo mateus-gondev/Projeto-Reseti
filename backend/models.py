@@ -36,6 +36,7 @@ class CriarOS(db.Model):
     assunto = db.Column(db.String(150))
     descricao = db.Column(db.Text)
     prioridade = db.Column(db.String(20))
+    anexo = db.Column(db.String(255))
     status = db.Column(db.String(20), default='Ativo')
     data_inicio = db.Column(db.DateTime, default=datetime.utcnow)
     data_fim = db.Column(db.DateTime)
