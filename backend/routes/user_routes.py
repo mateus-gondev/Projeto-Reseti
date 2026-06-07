@@ -7,23 +7,40 @@ from models import Usuario
 
 user_bp = Blueprint('users', __name__)
 
-# LISTAR TODOS OS USUÁRIOS 
+# LISTAR TODOS OS USUÁRIOS
 @user_bp.route('/', methods=['GET'])
 def get_users():
-    usuarios = Usuario.query.all()
+    db.session.expire_all()
+    usuarios = Usuario.query.order_by(Usuario.id_user).all()
     output = []
     for user in usuarios:
-        user_data = {
+        output.append({
             'id_user': user.id_user,
             'nome': user.nome,
             'email': user.email,
             'setor_curso': user.setor_curso,
             'permissao': user.permissao,
-            'status': user.status
-        }
-        output.append(user_data)
-    
-    return jsonify(output), 200
+            'status': user.status,
+        })
+
+    response = jsonify(output)
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    return response, 200
+
+# BUSCAR USUÁRIO POR ID
+@user_bp.route('/<int:id>', methods=['GET'])
+def get_user(id):
+    usuario = Usuario.query.get_or_404(id)
+
+    return jsonify({
+        'id_user': usuario.id_user,
+        'nome': usuario.nome,
+        'email': usuario.email,
+        'setor_curso': usuario.setor_curso,
+        'permissao': usuario.permissao,
+        'status': usuario.status,
+    }), 200
 
 # CRIAR NOVO USUÁRIO PELO ADM 
 @user_bp.route('/', methods=['POST'])
@@ -66,7 +83,19 @@ def update_user(id):
         usuario.senha = generate_password_hash(data.get('senha'), method='pbkdf2:sha256')
 
     db.session.commit()
-    return jsonify({"message": "Usuário atualizado com sucesso!"}), 200
+    db.session.refresh(usuario)
+
+    return jsonify({
+        "message": "Usuário atualizado com sucesso!",
+        "user": {
+            'id_user': usuario.id_user,
+            'nome': usuario.nome,
+            'email': usuario.email,
+            'setor_curso': usuario.setor_curso,
+            'permissao': usuario.permissao,
+            'status': usuario.status,
+        },
+    }), 200
 
 # REMOVER USUÁRIO
 @user_bp.route('/<int:id>', methods=['DELETE'])

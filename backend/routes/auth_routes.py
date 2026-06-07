@@ -45,6 +45,10 @@ def login():
     if not usuario or not check_password_hash(usuario.senha, data.get('senha')):
         return jsonify({"error": "Credenciais inválidas"}), 401
 
+    # BLOQUEIO DE USUÁRIO INATIVO
+    if usuario.status != 'Ativo':
+        return jsonify({"error": "Usuário inativo. Acesso negado."}), 403
+
     token = jwt.encode({
         'public_id': usuario.id_user, 
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
@@ -54,9 +58,12 @@ def login():
         "message": "Login realizado!",
         "token": token, 
         "user": {
-            "id_user": usuario.id_user, 
-            "nome": usuario.nome, 
-            "permissao": usuario.permissao
+            "id_user": usuario.id_user,
+            "nome": usuario.nome,
+            "email": usuario.email,
+            "setor_curso": usuario.setor_curso,
+            "permissao": usuario.permissao,
+            "status": usuario.status,
         }
     }), 200
 
